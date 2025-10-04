@@ -11,8 +11,10 @@ ServiceBusSender senderQueue;
 // number of messages to be sent to the queue
 const int numOfMessages = 3;
 
-client = new ServiceBusClient(
-    "Endpoint=sb://localhost:5672;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;");
+var composeConnectionString = Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
+//local kestrel connectiono string
+string connectionString = "Endpoint=sb://localhost:5672;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=SAS_KEY_VALUE;UseDevelopmentEmulator=true;";
+client = new ServiceBusClient(string.IsNullOrEmpty(composeConnectionString) ? connectionString : composeConnectionString);
 
 string topicName = "topic.1";
 
@@ -21,7 +23,8 @@ sender = client.CreateSender(topicName);
 // create a batch 
 using ServiceBusMessageBatch messageBatch = await sender.CreateMessageBatchAsync();
 
-Task.Delay(5000).Wait();
+//give time for SB to start
+Task.Delay(25000).Wait();
 
 //send to subscription 3
 for (int i = 1; i <= numOfMessages; i++)
@@ -153,5 +156,11 @@ finally
     await senderQueue.DisposeAsync();
     await client.DisposeAsync();
 }
-Console.WriteLine("Press any key to end the application");
-Console.ReadKey();
+
+Console.WriteLine("Publisher completed");
+bool isContainer = Environment.GetEnvironmentVariable("RUNNING_IN_CONTAINER") == "true";
+if (!isContainer)
+{
+    Console.WriteLine("Press any key to end the application");
+    Console.ReadKey();
+}
