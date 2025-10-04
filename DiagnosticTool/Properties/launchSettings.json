@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DiagnosticTool": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
