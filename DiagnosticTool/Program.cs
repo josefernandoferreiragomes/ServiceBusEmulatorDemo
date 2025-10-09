@@ -4,6 +4,7 @@ using Microsoft.Azure.Amqp.Framing;
 //give time for SB to start and publisher to send the messages
 Task.Delay(45000).Wait();
 
+// container connection string to be used when running in container
 var composeConnectionString = Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
 
 // local kestrel connectiono string
@@ -20,7 +21,7 @@ foreach (var subscriptionName in subscriptionNames)
     var receiver = client.CreateReceiver(topicName, subscriptionName);
     var activeMessages = await receiver.PeekMessagesAsync(maxMessages: 100);
 
-    Console.WriteLine($"Peek {topicName} messages for subscription {subscriptionName}");
+    Console.WriteLine($"Peek Topic {topicName} messages for subscription {subscriptionName}");
     Console.WriteLine($"   Message Count: {activeMessages.Count}");
     Console.WriteLine($"Peek {topicName} {subscriptionName} Active Messages:");
     foreach (var msg in activeMessages)
@@ -37,7 +38,7 @@ foreach (var subscriptionName in subscriptionNames)
     });
     var dlqMessages = await dlqReceiver.PeekMessagesAsync(maxMessages: 100);
 
-    Console.WriteLine($"🔸  {topicName} {subscriptionName} Dead-letter Messages:");
+    Console.WriteLine($"🔸Peek Topic {topicName} {subscriptionName} Dead-letter Messages:");
     Console.WriteLine($"   Message Count: {dlqMessages.Count}");
     foreach (var msg in dlqMessages)
     {
@@ -52,12 +53,12 @@ foreach (var subscriptionName in subscriptionNames)
 
 }
 
-Console.WriteLine($"Peek queue {queueName} messages");
+Console.WriteLine($"Peek Queue {queueName} messages");
 // 🔹 Peek active messages
 var queuePeekReceiver = client.CreateReceiver(queueName);
 var activeMessagesQueuePeek = await queuePeekReceiver.PeekMessagesAsync(maxMessages: 10);
+Console.WriteLine($"Peek 🔹 Queue {queueName} Active Messages:");
 Console.WriteLine($"   Message Count: {activeMessagesQueuePeek.Count}");
-Console.WriteLine($"Peek 🔹{queueName} Active Messages:");
 foreach (var msg in activeMessagesQueuePeek)
 {
     Console.WriteLine($"- MessageId: {msg.MessageId}");
@@ -72,7 +73,7 @@ var queueDlqReceiver = client.CreateReceiver(queueName, new ServiceBusReceiverOp
 });
 var queueDlqMessages = await queueDlqReceiver.PeekMessagesAsync(maxMessages: 10);
 
-Console.WriteLine($"🔸{queueName} Dead-letter Messages:");
+Console.WriteLine($"🔸Peek Queue {queueName} Dead-letter Messages:");
 Console.WriteLine($"   Message Count: {queueDlqMessages.Count}");
 foreach (var msg in queueDlqMessages)
 {
