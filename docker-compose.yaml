@@ -74,5 +74,20 @@ services:
       - emulator
       - publisher
 
+  function-order-publisher:
+    container_name: "function-order-publisher"
+    build:
+      context: .
+      dockerfile: OrderPublisher/Dockerfile
+    ports:
+      - "5025:80"
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+      RUNNING_IN_CONTAINER: "true"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+
 networks:
   sb-emulator:
