@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MessageResetDemo": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

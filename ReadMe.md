@@ -152,3 +152,13 @@ https://github.com/Azure/azure-service-bus-emulator-installer?tab=readme-ov-file
 https://github.com/alex-wolf-ps/service-bus-emulator
 
 https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator?tabs=docker-linux-container
+
+## Future steps
+
+### Add an azure function to act as publisher
+Invoke the publisher with a curl
+```bash
+curl -v "http://localhost:5025/api/Function1?code=KEY"
+```
+
+### Add an azure function to act as subscriber

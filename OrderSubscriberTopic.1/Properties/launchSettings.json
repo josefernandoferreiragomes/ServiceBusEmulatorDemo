@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "OrderSubscriberTopic._1": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7142"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 30935,
+      "useSSL": false
+    }
+  }
+}

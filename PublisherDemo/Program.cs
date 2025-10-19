@@ -2,7 +2,7 @@
 using Microsoft.Azure.Amqp.Framing;
 
 //give time for SB to start
-Task.Delay(40000).Wait();
+//Task.Delay(40000).Wait();
 
 ServiceBusClient client;
 

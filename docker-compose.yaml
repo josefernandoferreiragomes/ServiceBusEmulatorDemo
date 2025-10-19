@@ -73,6 +73,20 @@ services:
     depends_on:
       - emulator
       - publisher
+  
+  message-reset:
+    container_name: "message-reset"
+    build:
+      context: .
+      dockerfile: MessageResetDemo/Dockerfile
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+      RUNNING_IN_CONTAINER: "true"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+      - publisher
 
   function-order-publisher:
     container_name: "function-order-publisher"
@@ -83,7 +97,30 @@ services:
       - "5025:80"
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-      RUNNING_IN_CONTAINER: "true"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+  
+  function-order-subscriber:
+    container_name: "function-order-subscriber"
+    build:
+      context: .
+      dockerfile: OrderSubscriberTopic.1/Dockerfile   
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+
+  function-queue-subscriber:
+    container_name: "function-queue-subscriber"
+    build:
+      context: .
+      dockerfile: OrderSubscriberQueue.1/Dockerfile   
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
     networks:
       - sb-emulator
     depends_on:
