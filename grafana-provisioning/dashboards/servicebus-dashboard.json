@@ -1,0 +1,53 @@
+{
+  "id": null,
+  "uid": "servicebus-dashboard",
+  "title": "Azure Service Bus Emulator Metrics",
+  "tags": ["servicebus", "local", "pubsub"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "graph",
+      "title": "Publisher - Message Throughput",
+      "targets": [
+        {
+          "expr": "rate(publisher_messages_sent_total[1m])",
+          "legendFormat": "Messages Sent per Second"
+        }
+      ],
+      "xaxis": { "show": true },
+      "yaxes": [
+        { "format": "ops", "label": "msgs/sec", "show": true },
+        { "show": false }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Subscriber - Message Consumption Rate",
+      "targets": [
+        {
+          "expr": "rate(subscriber_messages_received_total[1m])",
+          "legendFormat": "Messages Consumed per Second"
+        }
+      ],
+      "xaxis": { "show": true },
+      "yaxes": [
+        { "format": "ops", "label": "msgs/sec", "show": true },
+        { "show": false }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Active Subscriptions",
+      "targets": [
+        {
+          "expr": "servicebus_active_subscriptions_total",
+          "legendFormat": "Subscriptions"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["last"] } }
+    }
+  ]
+}

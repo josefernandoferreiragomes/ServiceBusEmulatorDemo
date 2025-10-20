@@ -1,5 +1,6 @@
 name: microsoft-azure-servicebus-emulator
 services:
+
   emulator:
     container_name: "servicebus-emulator"
     image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
@@ -95,8 +96,11 @@ services:
       dockerfile: OrderPublisher/Dockerfile
     ports:
       - "5025:80"
+      - "5026:8081"
+      - '7071:7071'
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+      FUNCTION_KEY: "${FUNCTION_KEY}"
     networks:
       - sb-emulator
     depends_on:
@@ -106,7 +110,7 @@ services:
     container_name: "function-order-subscriber"
     build:
       context: .
-      dockerfile: OrderSubscriberTopic.1/Dockerfile   
+      dockerfile: OrderSubscriberTopic.1/Dockerfile    
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
     networks:
@@ -118,13 +122,47 @@ services:
     container_name: "function-queue-subscriber"
     build:
       context: .
-      dockerfile: OrderSubscriberQueue.1/Dockerfile   
+      dockerfile: OrderSubscriberQueue.1/Dockerfile       
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
     networks:
       - sb-emulator
     depends_on:
       - emulator
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+
+  # Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - '3000:3000'
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana-provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - sb-emulator
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana-data:
 
 networks:
   sb-emulator:

@@ -5,16 +5,18 @@ using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 
 namespace OrderPublisher;
 
 public class FunctionPublisher
 {
     private readonly ILogger<FunctionPublisher> _logger;
+    static readonly Counter PublishedMessages = Metrics.CreateCounter("publisher_published_messages_total", "Messages published by publisher");
 
     public FunctionPublisher(ILogger<FunctionPublisher> logger)
     {
-        _logger = logger;
+        _logger = logger;        
     }
 
     [Function("FunctionPublisher")]
@@ -73,6 +75,7 @@ public class FunctionPublisher
         {
             await sender.SendMessagesAsync(messageBatch1);
             Console.WriteLine($"A batch of {numOfMessages} messages has been published to the {topicName}. topic, for subscription.1 filter");
+            PublishedMessages.Inc(numOfMessages);
         }
         finally
         {
@@ -99,6 +102,7 @@ public class FunctionPublisher
         {
             await sender.SendMessagesAsync(messageBatch2);
             Console.WriteLine($"A batch of {numOfMessages} messages has been published to the {topicName}. topic, for subscription.2 filter");
+            PublishedMessages.Inc(numOfMessages);
         }
         finally
         {
@@ -119,6 +123,7 @@ public class FunctionPublisher
             await sender.SendMessagesAsync(messageBatch);
             Console.WriteLine($"A batch of {numOfMessages} messages has been published to the {topicName}. topic, for subscription.3");
             Console.WriteLine("(no filter, as it does not match the previous subscriptions' filters)");
+            PublishedMessages.Inc(numOfMessages);
         }
         finally
         {
@@ -143,6 +148,7 @@ public class FunctionPublisher
         {
             await senderQueue.SendMessagesAsync(messageBatchQueue);
             Console.WriteLine($"A batch of {numOfMessages} messages has been published to the {queueName} queue.");
+            PublishedMessages.Inc(numOfMessages);
         }
         finally
         {

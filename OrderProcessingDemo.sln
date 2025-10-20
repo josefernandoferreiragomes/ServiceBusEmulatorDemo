@@ -10,6 +10,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.env = .env
 		config.json = config.json
 		docker-compose.yaml = docker-compose.yaml
+		datasource.yaml = datasource.yaml
+		grafana-dashboard.json = grafana-dashboard.json
+		prometheus.yaml = prometheus.yaml
 		Queries.sql = Queries.sql
 		ReadMe.md = ReadMe.md
 	EndProjectSection

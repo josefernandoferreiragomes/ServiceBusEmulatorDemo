@@ -3,13 +3,14 @@ using System.Threading.Tasks;
 using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using Prometheus;
 
 namespace OrderSubscriberTopic._1;
 
 public class FunctionTopic1Subscription2
 {
     private readonly ILogger<FunctionTopic1Subscription2> _logger;
-
+    static readonly Counter ConsumedMessages = Metrics.CreateCounter("subscriber_consumed_messages_total", "Messages consumed by subscriber");
     public FunctionTopic1Subscription2(ILogger<FunctionTopic1Subscription2> logger)
     {
         _logger = logger;
@@ -27,5 +28,6 @@ public class FunctionTopic1Subscription2
 
             // Complete the message
         await messageActions.CompleteMessageAsync(message);
+        ConsumedMessages.Inc(1);
     }
 }

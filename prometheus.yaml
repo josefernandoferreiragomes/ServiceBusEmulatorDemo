@@ -1,0 +1,26 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  # Monitor Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  # Azure Function Publisher
+  - job_name: 'function-order-publisher'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['function-order-publisher:9184']
+
+  # Azure Function Subscriber
+  - job_name: 'function-order-subscriber'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['function-order-subscriber:9184']
+
+  # Queue Subscriber
+  - job_name: 'function-queue-subscriber'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['function-queue-subscriber:9184']

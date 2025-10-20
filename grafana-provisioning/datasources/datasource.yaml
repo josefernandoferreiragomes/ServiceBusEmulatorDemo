@@ -1,0 +1,23 @@
+apiVersion: 1
+
+# Data source provisioning
+providers:
+  - name: 'Prometheus'
+    orgId: 1
+    folder: ''
+    type: file
+    updateIntervalSeconds: 10
+    options:
+      path: /etc/grafana/provisioning/datasources
+
+---
+
+# Prometheus data source configuration
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
