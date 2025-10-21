@@ -22,7 +22,7 @@ public static class SubscriberMetrics
         "Messages moved to dead letter",
         new CounterConfiguration { LabelNames = new[] { "topic", "subscription" } });
 
-    // Histogram for processing duration - add labels so Grafana queries with topic/subscription work
+    // Histogram for processing duration (topic/subscription labels)
     public static readonly Histogram ProcessingDuration = Metrics.CreateHistogram(
         "subscriber_processing_duration_seconds",
         "Histogram of message processing durations in seconds",
@@ -32,20 +32,20 @@ public static class SubscriberMetrics
             LabelNames = new[] { "topic", "subscription" }
         });
 
-    // Dependency instrumentation (mock API)
+    // Dependency instrumentation with caller label
+    // Labels: caller = who invoked, dependency = target service, status = HTTP status
     public static readonly Counter HttpDependencyCalls = Metrics.CreateCounter(
         "http_dependency_calls_total",
         "HTTP dependency calls",
-        new CounterConfiguration { LabelNames = new[] { "dependency", "status" } });
+        new CounterConfiguration { LabelNames = new[] { "caller", "dependency", "status" } });
 
-    // Add dependency label to histogram so queries like {dependency="order-processor-backend"} work
     public static readonly Histogram HttpDependencyDuration = Metrics.CreateHistogram(
         "http_dependency_duration_seconds",
         "HTTP dependency call duration seconds",
         new HistogramConfiguration
         {
             Buckets = Histogram.ExponentialBuckets(0.01, 2, 10),
-            LabelNames = new[] { "dependency" }
+            LabelNames = new[] { "caller", "dependency" }
         });
 
     // Helper to wrap processing
@@ -56,7 +56,6 @@ public static class SubscriberMetrics
         {
             await work();
             sw.Stop();
-            // Observe with labels
             ProcessingDuration.WithLabels(topic, subscription).Observe(sw.Elapsed.TotalSeconds);
             MessagesReceived.WithLabels(topic, subscription).Inc();
         }
@@ -69,8 +68,8 @@ public static class SubscriberMetrics
         }
     }
 
-    // Example dependency call helper
-    public static async Task<T> CallDependencyAsync<T>(string dependencyName, Func<Task<T>> call)
+    // Example dependency call helper including callerName
+    public static async Task<T> CallDependencyAsync<T>(string callerName, string dependencyName, Func<Task<T>> call)
     {
         var sw = Stopwatch.StartNew();
         try
@@ -78,18 +77,17 @@ public static class SubscriberMetrics
             var result = await call();
             sw.Stop();
 
-            // Record duration with dependency label
-            HttpDependencyDuration.WithLabels(dependencyName).Observe(sw.Elapsed.TotalSeconds);
+            // Observe duration with caller + dependency
+            HttpDependencyDuration.WithLabels(callerName, dependencyName).Observe(sw.Elapsed.TotalSeconds);
 
-            // If the call returned an HttpResponseMessage, capture status code, otherwise assume 200
             if (result is HttpResponseMessage httpResp)
             {
                 var statusCode = ((int)httpResp.StatusCode).ToString();
-                HttpDependencyCalls.WithLabels(dependencyName, statusCode).Inc();
+                HttpDependencyCalls.WithLabels(callerName, dependencyName, statusCode).Inc();
             }
             else
             {
-                HttpDependencyCalls.WithLabels(dependencyName, "200").Inc();
+                HttpDependencyCalls.WithLabels(callerName, dependencyName, "200").Inc();
             }
 
             return result;
@@ -97,8 +95,8 @@ public static class SubscriberMetrics
         catch (Exception)
         {
             sw.Stop();
-            HttpDependencyDuration.WithLabels(dependencyName).Observe(sw.Elapsed.TotalSeconds);
-            HttpDependencyCalls.WithLabels(dependencyName, "500").Inc();
+            HttpDependencyDuration.WithLabels(callerName, dependencyName).Observe(sw.Elapsed.TotalSeconds);
+            HttpDependencyCalls.WithLabels(callerName, dependencyName, "500").Inc();
             throw;
         }
     }
