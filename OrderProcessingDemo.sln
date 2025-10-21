@@ -14,6 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose-full.yaml = docker-compose-full.yaml
 		docker-compose-functions.yaml = docker-compose-functions.yaml
 		docker-compose.yaml = docker-compose.yaml
+		grafanalogs.txt = grafanalogs.txt
 		prometheus.yaml = prometheus.yaml
 		Queries.sql = Queries.sql
 		ReadMe.md = ReadMe.md

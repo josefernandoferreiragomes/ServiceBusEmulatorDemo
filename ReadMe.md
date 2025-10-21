@@ -173,7 +173,7 @@ curl -v "http://localhost:5025/api/FunctionPublisher"
 add to docker-compose
 url: http://localhost:3000/
 grafana user: admin
-grafana pass: 9812@lfse3£
+grafana pass: admin123
 
 ### Prometheus
 add to docker-compose
