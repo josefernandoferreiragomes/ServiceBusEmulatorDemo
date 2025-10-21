@@ -1,0 +1,121 @@
+{
+  "id": null,
+  "uid": "servicebus-dependencies",
+  "title": "Service Bus Dependencies",
+  "tags": [ "servicebus", "dependencies", "monitoring" ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Dependency: function-order-subscriber → order-processor-backend",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status=~\"2..\"}[5m]))",
+          "legendFormat": "function-order-subscriber → order-processor-backend (success calls/min)",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status!~\"2..\"}[5m]))",
+          "legendFormat": "function-order-subscriber → order-processor-backend (error calls/min)",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_dependency_duration_seconds_bucket{dependency=\"order-processor-backend\"}[5m])) by (le))",
+          "legendFormat": "function-order-subscriber → order-processor-backend (p95 latency)",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 5 }
+            ]
+          }
+        }
+      },
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        },
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom"
+        }
+      },
+      "scopedVars": {}
+    },
+    {
+      "type": "stat",
+      "title": "Current Calls/min (success)",
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 0,
+        "y": 9
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status=~\"2..\"}[5m]))",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Current Calls/min (errors)",
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 8,
+        "y": 9
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status!~\"2..\"}[5m]))",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "p95 Latency (s)",
+      "gridPos": {
+        "h": 3,
+        "w": 8,
+        "x": 16,
+        "y": 9
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_dependency_duration_seconds_bucket{dependency=\"order-processor-backend\"}[5m])) by (le))",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "unit": "s"
+      }
+    }
+  ]
+}

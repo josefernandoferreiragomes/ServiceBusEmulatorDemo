@@ -90,7 +90,7 @@ services:
       dockerfile: OrderSubscriberTopic.1/Dockerfile    
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-      WAIT_TIME_MILISECONDS: "50000"
+      WAIT_TIME_MILISECONDS: "1"
     networks:
       - sb-emulator
     depends_on:

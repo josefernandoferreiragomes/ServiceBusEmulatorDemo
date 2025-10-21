@@ -34,7 +34,7 @@ public class FunctionTopic1Subscription2
         await SubscriberMetrics.ProcessWithMetricsAsync(topicName, subscriptionName, async () =>
         {
             // actual message handling, e.g., call mock API
-            await SubscriberMetrics.CallDependencyAsync("mock-api", async () =>
+            await SubscriberMetrics.CallDependencyAsync("order-processor-backend", async () =>
             {
                 using (var httpClient = new HttpClient())
                 {
