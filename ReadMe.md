@@ -152,3 +152,33 @@ https://github.com/Azure/azure-service-bus-emulator-installer?tab=readme-ov-file
 https://github.com/alex-wolf-ps/service-bus-emulator
 
 https://learn.microsoft.com/en-us/azure/service-bus-messaging/test-locally-with-service-bus-emulator?tabs=docker-linux-container
+
+## Future steps
+
+### Add an azure function to act as publisher
+Invoke the publisher with a curl (security level Function)))
+```bash
+curl -v "http://localhost:5025/api/FunctionPublisher?code=my-local-func-key"
+```
+Invoke the publisher with a curl (Anonymous access))
+```bash
+curl -v "http://localhost:5025/api/FunctionPublisher"
+```
+
+### Add an azure function to act as subscriber
+
+## Add grafana and prometheus to monitor the emulator
+
+### Grafana
+add to docker-compose
+url: http://localhost:3000/
+grafana user: admin
+grafana pass: admin123
+
+### Prometheus
+add to docker-compose
+add package
+```bash
+dotnet add package prometheus-net.AspNetCore
+```
+url: http://localhost:9090/

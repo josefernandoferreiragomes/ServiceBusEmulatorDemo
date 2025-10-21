@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "OrderSubscriberQueue._1": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7220"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "containerRunArguments": "--init",
+      "httpPort": 32522,
+      "useSSL": false
+    }
+  }
+}

@@ -1,4 +1,4 @@
-name: microsoft-azure-servicebus-emulator
+name: microsoft-azure-servicebus-emulator-consoles
 services:
 
   emulator:
@@ -21,7 +21,6 @@ services:
       sb-emulator:
         aliases:
           - "sb-emulator"
-
   mssql:
     container_name: "mssql"
     image: "mcr.microsoft.com/mssql/server:2022-latest"
@@ -34,80 +33,61 @@ services:
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}" # To be filled by user as per policy : https://learn.microsoft.com/en-us/sql/relational-databases/security/strong-passwords?view=sql-server-linux-ver16 
     ports:
       - "1433:1433"
-       
-  # diagnostic:
-  #   container_name: "diagnostic-tool"
-  #   build:
-  #     context: .
-  #     dockerfile: DiagnosticTool/Dockerfile
-  #   environment:
-  #     SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-  #     RUNNING_IN_CONTAINER: "true"
-  #     WAIT_TIME_MILISECONDS: "70000"
-  #   networks:
-  #     - sb-emulator
-  #   depends_on:
-  #     - emulator
-  #     - publisher
-  
-  # message-reset:
-  #   container_name: "message-reset"
-  #   build:
-  #     context: .
-  #     dockerfile: MessageResetDemo/Dockerfile
-  #   environment:
-  #     SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-  #     RUNNING_IN_CONTAINER: "true"
-  #     WAIT_TIME_MILISECONDS: "85000"
-  #   networks:
-  #     - sb-emulator
-  #   depends_on:
-  #     - emulator
-  #     - publisher
 
-  function-order-publisher:
-    container_name: "function-order-publisher"
+  publisher:
+    container_name: "publisher-demo"
     build:
       context: .
-      dockerfile: OrderPublisher/Dockerfile
-    ports:
-      - "5025:80"
-      - "5026:8081"
-      - '7071:7071'
+      dockerfile: PublisherDemo/Dockerfile
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-      FUNCTION_KEY: "${FUNCTION_KEY}"
-      WAIT_TIME_MILISECONDS: "35000"
-    networks:
-      - sb-emulator
-    depends_on:
-      - emulator
-  
-  function-order-subscriber:
-    container_name: "function-order-subscriber"
-    build:
-      context: .
-      dockerfile: OrderSubscriberTopic.1/Dockerfile    
-    environment:
-      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-      WAIT_TIME_MILISECONDS: "50000"
+      RUNNING_IN_CONTAINER: "true"
     networks:
       - sb-emulator
     depends_on:
       - emulator
 
-  function-queue-subscriber:
-    container_name: "function-queue-subscriber"
+  diagnostic:
+    container_name: "diagnostic-tool"
     build:
       context: .
-      dockerfile: OrderSubscriberQueue.1/Dockerfile       
+      dockerfile: DiagnosticTool/Dockerfile
     environment:
       SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
-      WAIT_TIME_MILISECONDS: "50000"
+      RUNNING_IN_CONTAINER: "true"
     networks:
       - sb-emulator
     depends_on:
       - emulator
+      - publisher
+
+  subscriber:
+    container_name: "subscriber-demo"
+    build:
+      context: .
+      dockerfile: SubscriberDemo/Dockerfile
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+      RUNNING_IN_CONTAINER: "true"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+      - publisher
+  
+  message-reset:
+    container_name: "message-reset"
+    build:
+      context: .
+      dockerfile: MessageResetDemo/Dockerfile
+    environment:
+      SERVICEBUS_CONNECTION_STRING: "${SB_CONNECTION_STRING}"
+      RUNNING_IN_CONTAINER: "true"
+    networks:
+      - sb-emulator
+    depends_on:
+      - emulator
+      - publisher
 
   # Prometheus
   prometheus:
@@ -130,7 +110,7 @@ services:
       - '3000:3000'
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     volumes:
       - grafana-data:/var/lib/grafana
       - ./grafana-provisioning/datasources:/etc/grafana/provisioning/datasources
@@ -138,20 +118,7 @@ services:
     networks:
       - sb-emulator
     depends_on:
-      - prometheus
-
-  order-processor-backend:
-    container_name: "order-processor-backend"
-    build:
-      context: .
-      dockerfile: OrderProcessorDemoBackendApi/Dockerfile   
-    ports:
-      - '5256:80'
-      - '5257:8081'
-    networks:
-      - sb-emulator
-    depends_on:
-      - function-order-subscriber
+      - prometheus  
 
 volumes:
   grafana-data:

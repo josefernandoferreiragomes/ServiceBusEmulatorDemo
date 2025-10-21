@@ -14,16 +14,23 @@ List<string> subscriptionNames = new() { "subscription.1", "subscription.2", "su
 var queueName = "queue.1";
 var client = new ServiceBusClient(string.IsNullOrEmpty(composeConnectionString) ? connectionString : composeConnectionString);
 
-// 🔹 Peek active messages
+// 🔹 Delete active messages
 foreach (var subscriptionName in subscriptionNames)
 {
 
-    var receiver = client.CreateReceiver(topicName, subscriptionName);
-    var activeMessages = await receiver.PeekMessagesAsync(maxMessages: 100);
+    var receiver = client.CreateReceiver(
+        topicName, 
+        subscriptionName, 
+        new ServiceBusReceiverOptions() 
+        {
+            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+        }
+    );
+    var activeMessages = await receiver.ReceiveMessagesAsync(maxMessages: 100);
 
-    Console.WriteLine($"Peek Topic {topicName} messages for subscription {subscriptionName}");
+    Console.WriteLine($"Receive and Delete from Topic {topicName} messages for subscription {subscriptionName}");
     Console.WriteLine($"   Message Count: {activeMessages.Count}");
-    Console.WriteLine($"Peek {topicName} {subscriptionName} Active Messages:");
+    Console.WriteLine($"Receive and Delete from {topicName} {subscriptionName} Active Messages:");
     foreach (var msg in activeMessages)
     {
         Console.WriteLine($"- MessageId: {msg.MessageId}");
@@ -31,14 +38,19 @@ foreach (var subscriptionName in subscriptionNames)
         Console.WriteLine($"  EnqueuedTime: {msg.EnqueuedTime}");
     }
 
-    // 🔸 Peek dead-letter messages
-    var dlqReceiver = client.CreateReceiver(topicName, subscriptionName, new ServiceBusReceiverOptions
-    {
-        SubQueue = SubQueue.DeadLetter
-    });
-    var dlqMessages = await dlqReceiver.PeekMessagesAsync(maxMessages: 100);
+    // 🔸 Receive and Delete from dead-letter messages
+    var dlqReceiver = client.CreateReceiver(
+        topicName, 
+        subscriptionName, 
+        new ServiceBusReceiverOptions
+        {
+            SubQueue = SubQueue.DeadLetter,
+            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+        }
+    );
+    var dlqMessages = await dlqReceiver.ReceiveMessagesAsync(maxMessages: 100);
 
-    Console.WriteLine($"🔸Peek Topic {topicName} {subscriptionName} Dead-letter Messages:");
+    Console.WriteLine($"🔸Receive and Delete from Topic {topicName} {subscriptionName} Dead-letter Messages:");
     Console.WriteLine($"   Message Count: {dlqMessages.Count}");
     foreach (var msg in dlqMessages)
     {
@@ -53,27 +65,37 @@ foreach (var subscriptionName in subscriptionNames)
 
 }
 
-Console.WriteLine($"Peek Queue {queueName} messages");
-// 🔹 Peek active messages
-var queuePeekReceiver = client.CreateReceiver(queueName);
-var activeMessagesQueuePeek = await queuePeekReceiver.PeekMessagesAsync(maxMessages: 100);
-Console.WriteLine($"Peek 🔹 Queue {queueName} Active Messages:");
-Console.WriteLine($"   Message Count: {activeMessagesQueuePeek.Count}");
-foreach (var msg in activeMessagesQueuePeek)
+Console.WriteLine($"Receive and Delete from Queue {queueName} messages");
+// 🔹 Receive and Delete from active messages
+var queueReceiver = client.CreateReceiver(
+    queueName, 
+    new ServiceBusReceiverOptions() 
+    { 
+        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete 
+    }
+);
+var activeMessagesQueue = await queueReceiver.ReceiveMessagesAsync(maxMessages: 100);
+Console.WriteLine($"Receive and Delete from 🔹 Queue {queueName} Active Messages:");
+Console.WriteLine($"   Message Count: {activeMessagesQueue.Count}");
+foreach (var msg in activeMessagesQueue)
 {
     Console.WriteLine($"- MessageId: {msg.MessageId}");
     Console.WriteLine($"  Body: {msg.Body}");
     Console.WriteLine($"  EnqueuedTime: {msg.EnqueuedTime}");
 }
 
-// 🔸 Peek dead-letter messages
-var queueDlqReceiver = client.CreateReceiver(queueName, new ServiceBusReceiverOptions
-{
-    SubQueue = SubQueue.DeadLetter
-});
-var queueDlqMessages = await queueDlqReceiver.PeekMessagesAsync(maxMessages: 100);
+// 🔸 Receive and Delete from dead-letter messages
+var queueDlqReceiver = client.CreateReceiver(
+    queueName, 
+    new ServiceBusReceiverOptions
+    {
+        SubQueue = SubQueue.DeadLetter,
+        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+    }
+);
+var queueDlqMessages = await queueDlqReceiver.ReceiveMessagesAsync(maxMessages: 100);
 
-Console.WriteLine($"🔸Peek Queue {queueName} Dead-letter Messages:");
+Console.WriteLine($"🔸Receive and Delete from Queue {queueName} Dead-letter Messages:");
 Console.WriteLine($"   Message Count: {queueDlqMessages.Count}");
 foreach (var msg in queueDlqMessages)
 {
@@ -83,5 +105,6 @@ foreach (var msg in queueDlqMessages)
     Console.WriteLine($"  DeadLetterErrorDescription: {msg.DeadLetterErrorDescription}");
 }
 
-Console.WriteLine("Diagnostic completed");
+Console.WriteLine("Message Reset completed");
+await queueDlqReceiver.DisposeAsync();
 await client.DisposeAsync();

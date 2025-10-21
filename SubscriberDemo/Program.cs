@@ -1,7 +1,7 @@
 ﻿using Azure.Messaging.ServiceBus;
 using Microsoft.Azure.Amqp.Framing;
 
-Task.Delay(50000).Wait();
+//Task.Delay(50000).Wait();
 
 // container connection string to be used when running in container
 var composeConnectionString = Environment.GetEnvironmentVariable("SERVICEBUS_CONNECTION_STRING");
@@ -16,27 +16,141 @@ var queueName = "queue.1";
 foreach (var subscriptionName in subscriptionNames)
 {
     Console.WriteLine($"Try to consume messages from topic {topicName}, subscription {subscriptionName}");
-    var diagnosticTopicReceiver = client.CreateReceiver(topicName, subscriptionName);
-    var messageFromTopic = await diagnosticTopicReceiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5));    
-    if (messageFromTopic != null)
+    var subscriberTopicReceiver = client.CreateReceiver(
+        topicName, 
+        subscriptionName, 
+        new ServiceBusReceiverOptions()
+        {
+            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+        }
+    );
+    var activeMessages = await subscriberTopicReceiver.ReceiveMessagesAsync(maxMessages: 1);
+
+    Console.WriteLine($"Receive and Delete from Topic {topicName} messages for subscription {subscriptionName}");
+    Console.WriteLine($"   Message Count: {activeMessages.Count}");
+    Console.WriteLine($"Receive and Delete from {topicName} {subscriptionName} Active Messages:");
+    foreach (var msg in activeMessages)
     {
-        Console.WriteLine($"Message From Topic {topicName}, subscriber {subscriptionName}: message received");
-        Console.WriteLine($"  {messageFromTopic.Body}");
+        Console.WriteLine($"- MessageId: {msg.MessageId}");
+        Console.WriteLine($"  Body: {msg.Body}");
+        Console.WriteLine($"  EnqueuedTime: {msg.EnqueuedTime}");
+    }
+    
+    var remainingActiveMessages = await subscriberTopicReceiver.ReceiveMessagesAsync(maxMessages: 100);
+    if (remainingActiveMessages.Count == 0)
+    {
+        Console.WriteLine("   No more active messages");
+    }
+    else
+    {
+        Console.WriteLine($"   There are still {remainingActiveMessages.Count} active messages remaining");
     }
 
     Console.WriteLine();
-    await diagnosticTopicReceiver.DisposeAsync();
+
+    // 🔸 Receive and Delete from dead-letter messages
+    var dlqReceiver = client.CreateReceiver(
+        topicName,
+        subscriptionName,
+        new ServiceBusReceiverOptions
+        {
+            SubQueue = SubQueue.DeadLetter,
+            ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+        }
+    );
+    var dlqMessages = await dlqReceiver.ReceiveMessagesAsync(maxMessages: 1);
+
+    Console.WriteLine($"🔸Receive and Delete from Topic {topicName} {subscriptionName} Dead-letter Messages:");
+    Console.WriteLine($"   Message Count: {dlqMessages.Count}");
+    foreach (var msg in dlqMessages)
+    {
+        Console.WriteLine($"- MessageId: {msg.MessageId}");
+        Console.WriteLine($"  Body: {msg.Body}");
+        Console.WriteLine($"  DeadLetterReason: {msg.DeadLetterReason}");
+        Console.WriteLine($"  DeadLetterErrorDescription: {msg.DeadLetterErrorDescription}");
+    }
+    Console.WriteLine();
+
+    var remainingDlqMessages = await dlqReceiver.ReceiveMessagesAsync(maxMessages: 100);
+    if (remainingDlqMessages.Count == 0)
+    {
+        Console.WriteLine("   No more active DLQ messages");
+    }
+    else
+    {
+        Console.WriteLine($"   There are still {remainingDlqMessages.Count} active DLQ messages remaining");
+    }
+
+    await subscriberTopicReceiver.DisposeAsync();
+    await dlqReceiver.DisposeAsync();
 }
-var diagnosticQueueReceiver = client.CreateReceiver(queueName);
-Console.WriteLine($"Message From Queue {queueName} receiver started");
-var messageFromQueue = await diagnosticQueueReceiver.ReceiveMessageAsync(TimeSpan.FromSeconds(5));
-if (messageFromQueue != null)
+
+Console.WriteLine();
+
+Console.WriteLine($"Receive and Delete from Queue {queueName} messages");
+// 🔹 Receive and Delete from active messages
+var queueReceiver = client.CreateReceiver(
+    queueName,
+    new ServiceBusReceiverOptions()
+    {
+        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+    }
+);
+var activeMessagesQueue = await queueReceiver.ReceiveMessagesAsync(maxMessages: 1);
+Console.WriteLine($"Receive and Delete from 🔹 Queue {queueName} Active Messages:");
+Console.WriteLine($"   Message Count: {activeMessagesQueue.Count}");
+foreach (var msg in activeMessagesQueue)
 {
-    Console.WriteLine($"Message From Queue {queueName} message received...");
-    Console.WriteLine($"  {messageFromQueue.Body}");
+    Console.WriteLine($"- MessageId: {msg.MessageId}");
+    Console.WriteLine($"  Body: {msg.Body}");
+    Console.WriteLine($"  EnqueuedTime: {msg.EnqueuedTime}");
 }
 
-Console.WriteLine("Subscriber completed");
+var remainingMessagesQueue = await queueReceiver.ReceiveMessagesAsync(maxMessages: 100);
+if (remainingMessagesQueue.Count == 0)
+{
+    Console.WriteLine("   No more active messages");
+}
+else
+{
+    Console.WriteLine($"   There are still {remainingMessagesQueue.Count} active messages remaining");
+}
 
-await diagnosticQueueReceiver.DisposeAsync();
+Console.WriteLine();
+
+// 🔸 Receive and Delete from dead-letter messages
+var queueDlqReceiver = client.CreateReceiver(
+    queueName,
+    new ServiceBusReceiverOptions
+    {
+        SubQueue = SubQueue.DeadLetter,
+        ReceiveMode = ServiceBusReceiveMode.ReceiveAndDelete
+    }
+);
+var queueDlqMessages = await queueDlqReceiver.ReceiveMessagesAsync(maxMessages: 1);
+
+Console.WriteLine($"🔸Receive and Delete from Queue {queueName} Dead-letter Messages:");
+Console.WriteLine($"   Message Count: {queueDlqMessages.Count}");
+foreach (var msg in queueDlqMessages)
+{
+    Console.WriteLine($"- MessageId: {msg.MessageId}");
+    Console.WriteLine($"  Body: {msg.Body}");
+    Console.WriteLine($"  DeadLetterReason: {msg.DeadLetterReason}");
+    Console.WriteLine($"  DeadLetterErrorDescription: {msg.DeadLetterErrorDescription}");
+}
+
+var remainingQueueDlqMessages = await queueReceiver.ReceiveMessagesAsync(maxMessages: 100);
+if (remainingQueueDlqMessages.Count == 0)
+{
+    Console.WriteLine("   No more active DLQ messages");
+}
+else
+{
+    Console.WriteLine($"   There are still {remainingQueueDlqMessages.Count} active DLQ messages remaining");
+}
+
+Console.WriteLine();
+
+Console.WriteLine("Message Consumption completed");
+await queueDlqReceiver.DisposeAsync();
 await client.DisposeAsync();

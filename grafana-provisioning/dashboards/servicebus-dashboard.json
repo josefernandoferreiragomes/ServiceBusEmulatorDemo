@@ -1,0 +1,300 @@
+{
+  "id": null,
+  "uid": "servicebus-detailed",
+  "title": "Service Bus Details",
+  "tags": [ "servicebus", "emulator" ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "name": "topic",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(subscriber_messages_received_total, topic)",
+        "refresh": 2,
+        "includeAll": true,
+        "label": "Topic"
+      },
+      {
+        "name": "subscription",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(subscriber_messages_received_total{topic=~\"$topic\"}, subscription)",
+        "refresh": 2,
+        "includeAll": true,
+        "label": "Subscription"
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "row",
+      "title": "Overall Status",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Active Topics",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "count(count by (topic) (subscriber_messages_received_total))",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none"
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Active Subscriptions",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "count(count by (topic, subscription) (subscriber_messages_received_total))",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Dead Letter Messages (Last Hour)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(servicebus_deadletter_messages_total{topic=~\"$topic\",subscription=~\"$subscription\"}[1h]))",
+          "instant": true
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Processing Failures (Last Hour)",
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(subscriber_messages_failed_total{topic=~\"$topic\",subscription=~\"$subscription\"}[1h]))",
+          "instant": true
+        }
+      ],
+      "thresholds": {
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "red"
+          }
+        ]
+      }
+    },
+    {
+      "type": "row",
+      "title": "Message Flow",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Message Processing Rate by Topic/Subscription",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "expr": "rate(subscriber_messages_received_total{topic=~\"$topic\",subscription=~\"$subscription\"}[5m])",
+          "legendFormat": "{{topic}}/{{subscription}}"
+        }
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Processing Duration (p95) by Topic/Subscription",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(subscriber_processing_duration_seconds_bucket{topic=~\"$topic\",subscription=~\"$subscription\"}[5m])) by (le, topic, subscription))",
+          "legendFormat": "{{topic}}/{{subscription}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Errors & Dependencies",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Error Rates by Type",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "targets": [
+        {
+          "expr": "rate(subscriber_messages_failed_total{topic=~\"$topic\",subscription=~\"$subscription\"}[5m])",
+          "legendFormat": "Failed: {{topic}}/{{subscription}}"
+        },
+        {
+          "expr": "rate(servicebus_deadletter_messages_total{topic=~\"$topic\",subscription=~\"$subscription\"}[5m])",
+          "legendFormat": "DeadLetter: {{topic}}/{{subscription}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Backend API Latency",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_dependency_duration_seconds_bucket{dependency=\"order-processor-backend\"}[5m])) by (le))",
+          "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_dependency_duration_seconds_bucket{dependency=\"order-processor-backend\"}[5m])) by (le))",
+          "legendFormat": "p50"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Detailed Statistics",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 23
+      },
+      "collapsed": false
+    },
+    {
+      "type": "table",
+      "title": "Topic/Subscription Statistics",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "targets": [
+        {
+          "expr": "sum by (topic, subscription) (subscriber_messages_received_total{topic=~\"$topic\",subscription=~\"$subscription\"})",
+          "format": "table",
+          "instant": true,
+          "legendFormat": ""
+        },
+        {
+          "expr": "sum by (topic, subscription) (subscriber_messages_failed_total{topic=~\"$topic\",subscription=~\"$subscription\"})",
+          "format": "table",
+          "instant": true
+        },
+        {
+          "expr": "sum by (topic, subscription) (servicebus_deadletter_messages_total{topic=~\"$topic\",subscription=~\"$subscription\"})",
+          "format": "table",
+          "instant": true
+        }
+      ],
+      "transformations": [
+        {
+          "type": "merge",
+          "reducerId": "sum"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
