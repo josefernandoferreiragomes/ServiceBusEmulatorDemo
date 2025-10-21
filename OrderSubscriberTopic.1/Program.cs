@@ -31,6 +31,14 @@ metricsApp.UseRouting();
 metricsApp.UseHttpMetrics();   // optional: captures basic http metrics
 metricsApp.MapMetrics();      // exposes /metrics
 
+int waitTimeBeforeStart = 0;
+int.TryParse(Environment.GetEnvironmentVariable("WAIT_TIME_MILISECONDS"), out waitTimeBeforeStart);
+if (waitTimeBeforeStart > 0)
+{
+    Console.WriteLine($"Waiting {waitTimeBeforeStart} ms before starting Functions host...");
+    await Task.Delay(waitTimeBeforeStart);
+}
+
 // Start metrics host in background
 _ = metricsApp.StartAsync();
 

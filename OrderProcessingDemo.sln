@@ -9,9 +9,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.env = .env
 		config.json = config.json
-		docker-compose.yaml = docker-compose.yaml
 		datasource.yaml = datasource.yaml
-		grafana-dashboard.json = grafana-dashboard.json
+		docker-compose-consoles.yaml = docker-compose-consoles.yaml
+		docker-compose-full.yaml = docker-compose-full.yaml
+		docker-compose-functions.yaml = docker-compose-functions.yaml
+		docker-compose.yaml = docker-compose.yaml
 		prometheus.yaml = prometheus.yaml
 		Queries.sql = Queries.sql
 		ReadMe.md = ReadMe.md
@@ -30,6 +32,27 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageResetDemo", "MessageResetDemo\MessageResetDemo.csproj", "{B5D7BD2E-82EC-45DA-B929-C7A7B6CF41CB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderSubscriberQueue.1", "OrderSubscriberQueue.1\OrderSubscriberQueue.1.csproj", "{A2822D1D-A27D-47B3-A8A4-6C5F042EB7A9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "grafana-provisioning", "grafana-provisioning", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dashboards", "dashboards", "{8CF9A2EB-F2FD-41E2-846A-B1FCEC52B3B4}"
+	ProjectSection(SolutionItems) = preProject
+		grafana-provisioning\dashboards\dashboards.yaml = grafana-provisioning\dashboards\dashboards.yaml
+		grafana-provisioning\dashboards\servicebus-dashboard.json = grafana-provisioning\dashboards\servicebus-dashboard.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessorDemoBackendApi", "OrderProcessorDemoBackendApi\OrderProcessorDemoBackendApi.csproj", "{84D7AFE2-5E27-487A-8F81-467556A22AA5}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "datasources", "datasources", "{B133DF18-47C5-46A1-B0FA-4AE8D359B299}"
+	ProjectSection(SolutionItems) = preProject
+		grafana-provisioning\datasources\datasource.yaml = grafana-provisioning\datasources\datasource.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApplications", "ConsoleApplications", "{9C485779-2CE9-49EF-B3C0-5E2E83577A82}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AzureFunctions", "AzureFunctions", "{D429086A-D644-4C2E-85DC-93E84CC341A7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "APIs", "APIs", "{D425CABC-78D2-4B65-AA93-FC7FB30A6C4C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,9 +92,27 @@ Global
 		{A2822D1D-A27D-47B3-A8A4-6C5F042EB7A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A2822D1D-A27D-47B3-A8A4-6C5F042EB7A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A2822D1D-A27D-47B3-A8A4-6C5F042EB7A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84D7AFE2-5E27-487A-8F81-467556A22AA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84D7AFE2-5E27-487A-8F81-467556A22AA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84D7AFE2-5E27-487A-8F81-467556A22AA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84D7AFE2-5E27-487A-8F81-467556A22AA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{533BEC44-BD79-403F-8111-9139557CD274} = {9C485779-2CE9-49EF-B3C0-5E2E83577A82}
+		{38B7BDD1-F843-4C4E-B5D4-CFDA742531C3} = {9C485779-2CE9-49EF-B3C0-5E2E83577A82}
+		{71D22E14-6786-4F24-B910-914C71E8D5F9} = {9C485779-2CE9-49EF-B3C0-5E2E83577A82}
+		{D8977F5C-066D-417A-8488-FAD314AEACE8} = {D429086A-D644-4C2E-85DC-93E84CC341A7}
+		{0EB4B407-6262-0A7D-E6EC-9ED6CB766E39} = {D429086A-D644-4C2E-85DC-93E84CC341A7}
+		{C46D3914-FD02-433A-B201-C0120172C279} = {D429086A-D644-4C2E-85DC-93E84CC341A7}
+		{B5D7BD2E-82EC-45DA-B929-C7A7B6CF41CB} = {9C485779-2CE9-49EF-B3C0-5E2E83577A82}
+		{A2822D1D-A27D-47B3-A8A4-6C5F042EB7A9} = {D429086A-D644-4C2E-85DC-93E84CC341A7}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}
+		{8CF9A2EB-F2FD-41E2-846A-B1FCEC52B3B4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{84D7AFE2-5E27-487A-8F81-467556A22AA5} = {D425CABC-78D2-4B65-AA93-FC7FB30A6C4C}
+		{B133DF18-47C5-46A1-B0FA-4AE8D359B299} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {59F8BBDC-87E0-4329-94B8-FBBE49D8C4A9}

@@ -1,53 +1,244 @@
 {
   "id": null,
-  "uid": "servicebus-dashboard",
-  "title": "Azure Service Bus Emulator Metrics",
-  "tags": ["servicebus", "local", "pubsub"],
+  "uid": "servicebus-troubleshoot",
+  "title": "Service Bus Emulator — Troubleshooting",
+  "tags": [ "servicebus", "emulator", "pubsub" ],
   "timezone": "browser",
   "schemaVersion": 36,
   "version": 1,
   "refresh": "10s",
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "job",
+        "label": "Job",
+        "query": "label_values(up, job)",
+        "datasource": "Prometheus",
+        "allValue": ".*",
+        "includeAll": true
+      }
+    ]
+  },
   "panels": [
     {
-      "type": "graph",
-      "title": "Publisher - Message Throughput",
-      "targets": [
-        {
-          "expr": "rate(publisher_messages_sent_total[1m])",
-          "legendFormat": "Messages Sent per Second"
-        }
-      ],
-      "xaxis": { "show": true },
-      "yaxes": [
-        { "format": "ops", "label": "msgs/sec", "show": true },
-        { "show": false }
-      ]
-    },
-    {
-      "type": "graph",
-      "title": "Subscriber - Message Consumption Rate",
-      "targets": [
-        {
-          "expr": "rate(subscriber_messages_received_total[1m])",
-          "legendFormat": "Messages Consumed per Second"
-        }
-      ],
-      "xaxis": { "show": true },
-      "yaxes": [
-        { "format": "ops", "label": "msgs/sec", "show": true },
-        { "show": false }
-      ]
+      "type": "row",
+      "title": "Overview",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      }
     },
     {
       "type": "stat",
-      "title": "Active Subscriptions",
+      "title": "Total Published",
       "targets": [
         {
-          "expr": "servicebus_active_subscriptions_total",
-          "legendFormat": "Subscriptions"
+          "expr": "publisher_published_messages_total",
+          "legendFormat": ""
         }
       ],
-      "options": { "reduceOptions": { "calcs": ["last"] } }
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Total Consumed",
+      "targets": [
+        {
+          "expr": "subscriber_messages_received_total",
+          "legendFormat": ""
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Dead-letter Messages",
+      "targets": [
+        {
+          "expr": "servicebus_deadletter_messages_total",
+          "legendFormat": ""
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Failed Processing",
+      "targets": [
+        {
+          "expr": "subscriber_messages_failed_total",
+          "legendFormat": ""
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      }
+    },
+
+    {
+      "type": "row",
+      "title": "Throughput & Errors",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Publisher Throughput (msgs/sec)",
+      "targets": [
+        {
+          "expr": "rate(publisher_published_messages_total[1m])",
+          "legendFormat": "publisher"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Subscriber Throughput (msgs/sec)",
+      "targets": [
+        {
+          "expr": "rate(subscriber_messages_received_total[1m])",
+          "legendFormat": "subscriber"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Dead-letter / Failed Rate",
+      "targets": [
+        {
+          "expr": "rate(servicebus_deadletter_messages_total[5m])",
+          "legendFormat": "deadletter"
+        },
+        {
+          "expr": "rate(subscriber_messages_failed_total[5m])",
+          "legendFormat": "failed"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Processing p50/p95 (seconds)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(subscriber_processing_duration_seconds_bucket[5m])) by (le, job))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(subscriber_processing_duration_seconds_bucket[5m])) by (le, job))",
+          "legendFormat": "p95"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      }
+    },
+
+    {
+      "type": "row",
+      "title": "Dependencies & Health",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      }
+    },
+    {
+      "type": "graph",
+      "title": "External HTTP Dependency Calls (per dependency)",
+      "targets": [
+        {
+          "expr": "rate(http_dependency_calls_total[1m])",
+          "legendFormat": "{{dependency}} - {{status}}",
+          "refId": "A"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 19
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Dependency Latency (p95)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_dependency_duration_seconds_bucket[5m])) by (le, dependency, job))",
+          "legendFormat": "{{dependency}} p95",
+          "refId": "B"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 19
+      }
+    },
+    {
+      "type": "table",
+      "title": "Active Targets (up)",
+      "targets": [
+        {
+          "expr": "up{job=~\"$job\"}",
+          "legendFormat": "{{instance}}",
+          "refId": "C"
+        }
+      ],
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 25
+      }
     }
   ]
 }
