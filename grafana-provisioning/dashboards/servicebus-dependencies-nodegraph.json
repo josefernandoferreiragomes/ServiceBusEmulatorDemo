@@ -1,0 +1,116 @@
+{
+  "id": null,
+  "uid": "servicebus-dependencies-nodegraph",
+  "title": "Service Bus Dependencies (Node Graph)",
+  "tags": ["servicebus", "dependencies", "node-graph"],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "nodeGraph",
+      "title": "Dependency: function-order-subscriber → order-processor-backend",
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "layout": "cola",
+        "nodeSpacing": 50,
+        "node": {
+          "radius": 20,
+          "minRadius": 8,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2E86AB"
+          },
+          "showLabel": true,
+          "labelTemplate": "{{name}}"
+        },
+        "edge": {
+          "showLabels": true,
+          "labelTemplate": "{{metric}}: {{value}}"
+        },
+        "showLegend": true,
+        "legend": {
+          "show": true,
+          "placement": "right"
+        },
+        "nodes": [
+          {
+            "id": "function-order-subscriber",
+            "name": "function-order-subscriber",
+            "type": "service",
+            "category": "subscriber",
+            "color": "#2E86AB"
+          },
+          {
+            "id": "order-processor-backend",
+            "name": "order-processor-backend",
+            "type": "service",
+            "category": "backend",
+            "color": "#3DA35D"
+          }
+        ],
+        "links": [
+          {
+            "source": "function-order-subscriber",
+            "target": "order-processor-backend",
+            "id": "calls_success",
+            "title": "success calls/min",
+            "metricRef": "A",
+            "displayMode": "line"
+          },
+          {
+            "source": "function-order-subscriber",
+            "target": "order-processor-backend",
+            "id": "calls_error",
+            "title": "error calls/min",
+            "metricRef": "B",
+            "displayMode": "line",
+            "color": "#E06C75"
+          },
+          {
+            "source": "function-order-subscriber",
+            "target": "order-processor-backend",
+            "id": "p95_latency",
+            "title": "p95 latency (s)",
+            "metricRef": "C",
+            "displayMode": "dashed",
+            "color": "#F39C12"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status=~\"2..\"}[5m]))",
+          "legendFormat": "success_calls_per_min",
+          "refId": "A",
+          "instant": false
+        },
+        {
+          "expr": "sum(rate(http_dependency_calls_total{dependency=\"order-processor-backend\", status!~\"2..\"}[5m]))",
+          "legendFormat": "error_calls_per_min",
+          "refId": "B",
+          "instant": false
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_dependency_duration_seconds_bucket{dependency=\"order-processor-backend\"}[5m])) by (le))",
+          "legendFormat": "p95_latency_seconds",
+          "refId": "C",
+          "instant": false
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        }
+      }
+    }
+  ]
+}

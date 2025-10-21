@@ -39,7 +39,15 @@ public class FunctionTopic1Subscription3
                 using (var httpClient = new HttpClient())
                 {
                     // HttpClient call to mock API
-                    var response = await httpClient.GetAsync("http://order-processor-backend:8080");
+                    HttpResponseMessage response;
+                    if (new Random().Next(2) == 0)
+                    {
+                        response = await httpClient.GetAsync("http://order-processor-backend:8080"); //error path
+                    }
+                    else
+                    { 
+                        response = await httpClient.GetAsync("http://order-processor-backend:8080/weatherforecast"); //success path
+                    }
                     _logger.LogInformation("HTTP Response Status Code: {statusCode}", response.StatusCode);
                     response.EnsureSuccessStatusCode();
                     BackendCalls.Inc(1);
