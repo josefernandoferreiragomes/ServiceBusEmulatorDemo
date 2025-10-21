@@ -8,23 +8,23 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//// Build and start a tiny Kestrel-based metrics host inside the same process.
-//// Prometheus.AspNetCore provides UseHttpMetrics() and MapMetrics().
-//var metricsBuilder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder();
-//metricsBuilder.WebHost.ConfigureKestrel(options =>
-//{
-//    // Listen on port 9184 for metrics (internal container port)
-//    options.ListenAnyIP(9184);
-//});
+// Build and start a tiny Kestrel-based metrics host inside the same process.
+// Prometheus.AspNetCore provides UseHttpMetrics() and MapMetrics().
+var metricsBuilder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder();
+metricsBuilder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen on port 9184 for metrics (internal container port)
+    options.ListenAnyIP(9184);
+});
 
-//// We only need routing and the metrics middleware
-//var metricsApp = metricsBuilder.Build();
-//metricsApp.UseRouting();
-//metricsApp.UseHttpMetrics();   // optional: captures basic http metrics
-//metricsApp.MapMetrics();      // exposes /metrics
+// We only need routing and the metrics middleware
+var metricsApp = metricsBuilder.Build();
+metricsApp.UseRouting();
+metricsApp.UseHttpMetrics();   // optional: captures basic http metrics
+metricsApp.MapMetrics();      // exposes /metrics
 
-//// Start metrics host in background
-//_ = metricsApp.StartAsync();
+// Start metrics host in background
+_ = metricsApp.StartAsync();
 
 var app = builder.Build();
 
@@ -35,7 +35,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 var summaries = new[]
 {

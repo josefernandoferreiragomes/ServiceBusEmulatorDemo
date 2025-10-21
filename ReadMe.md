@@ -164,7 +164,18 @@ Invoke the publisher with a curl (Anonymous access))
 ```bash
 curl -v "http://localhost:5025/api/FunctionPublisher"
 ```
+### Add backend api to receive requests from the subscribers
 
+https://localhost:32770/swagger/index.html
+https://localhost:32771/swagger/index.html
+https://localhost:32775/swagger/index.html
+curl -X 'GET' \
+  'https://localhost:32775/weatherforecast' \
+  -H 'accept: application/json'
+
+  curl -X 'GET' \
+  'http://localhost:32774/weatherforecast' \
+  -H 'accept: application/json'
 ### Add an azure function to act as subscriber
 
 ## Add grafana and prometheus to monitor the emulator
@@ -175,6 +186,12 @@ url: http://localhost:3000/
 grafana user: admin
 grafana pass: admin123
 
+### clean grafana data
+```bash
+docker-compose down -v grafana
+or
+docker volume rm microsoft-azure-servicebus-emulator_grafana-data
+```
 ### Prometheus
 add to docker-compose
 add package

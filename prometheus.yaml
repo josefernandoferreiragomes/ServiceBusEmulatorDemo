@@ -24,3 +24,9 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ['function-queue-subscriber:9184']
+  
+  # Backend api
+  - job_name: 'order-processor-backend'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['order-processor-backend:9184']

@@ -146,8 +146,8 @@ services:
       context: .
       dockerfile: OrderProcessorDemoBackendApi/Dockerfile   
     ports:
-      - '5256:80'
-      - '5257:8081'
+      - '32770:8080'
+      - '32771:8081'
     networks:
       - sb-emulator
     depends_on:

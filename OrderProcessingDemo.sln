@@ -40,6 +40,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "dashboards", "dashboards", 
 	ProjectSection(SolutionItems) = preProject
 		grafana-provisioning\dashboards\dashboards.yaml = grafana-provisioning\dashboards\dashboards.yaml
 		grafana-provisioning\dashboards\servicebus-dashboard.json = grafana-provisioning\dashboards\servicebus-dashboard.json
+		grafana-provisioning\dashboards\servicebus-errors.json = grafana-provisioning\dashboards\servicebus-errors.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderProcessorDemoBackendApi", "OrderProcessorDemoBackendApi\OrderProcessorDemoBackendApi.csproj", "{84D7AFE2-5E27-487A-8F81-467556A22AA5}"

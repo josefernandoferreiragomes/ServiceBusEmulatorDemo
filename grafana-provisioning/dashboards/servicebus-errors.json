@@ -1,0 +1,273 @@
+{
+  "id": null,
+  "uid": "servicebus-errors",
+  "title": "Service Bus Errors & Alerts",
+  "tags": [ "servicebus", "errors", "monitoring" ],
+  "timezone": "browser",
+  "schemaVersion": 36,
+  "version": 1,
+  "refresh": "10s",
+  "panels": [
+    {
+      "type": "row",
+      "title": "Error Overview",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "collapsed": false
+    },
+    {
+      "type": "stat",
+      "title": "Total Failed Messages (24h)",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(increase(subscriber_messages_failed_total[24h]))",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area"
+      },
+      "thresholds": {
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 10,
+            "color": "yellow"
+          },
+          {
+            "value": 50,
+            "color": "red"
+          }
+        ]
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Dead Letter Queue Size",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(servicebus_deadletter_messages_total)",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background"
+      },
+      "thresholds": {
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "orange"
+          },
+          {
+            "value": 10,
+            "color": "red"
+          }
+        ]
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Current Error Rate (5m)",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 1
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(subscriber_messages_failed_total[5m])) * 60",
+          "instant": true
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "unit": "errors/min"
+      },
+      "thresholds": {
+        "steps": [
+          {
+            "value": null,
+            "color": "green"
+          },
+          {
+            "value": 1,
+            "color": "yellow"
+          },
+          {
+            "value": 5,
+            "color": "red"
+          }
+        ]
+      }
+    },
+    {
+      "type": "row",
+      "title": "Error Trends",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Failed Messages Over Time",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (topic, subscription) (rate(subscriber_messages_failed_total[5m]))",
+          "legendFormat": "{{topic}}/{{subscription}}"
+        }
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Dead Letter Messages Over Time",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "targets": [
+        {
+          "expr": "sum by (topic, subscription) (rate(servicebus_deadletter_messages_total[5m]))",
+          "legendFormat": "{{topic}}/{{subscription}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Error Details by Topic/Subscription",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "collapsed": false
+    },
+    {
+      "type": "table",
+      "title": "Error Summary by Topic/Subscription",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "targets": [
+        {
+          "expr": "sum by (topic, subscription) (increase(subscriber_messages_failed_total[1h]))",
+          "format": "table",
+          "instant": true,
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "displayName",
+                "value": "Failed Messages (Last Hour)"
+              },
+              {
+                "id": "custom.displayMode",
+                "value": "color-background"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

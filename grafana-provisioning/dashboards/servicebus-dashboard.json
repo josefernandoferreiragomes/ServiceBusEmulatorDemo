@@ -1,6 +1,6 @@
 {
   "id": null,
-  "uid": "servicebus-detailed",
+  "uid": "servicebus-overview",
   "title": "Service Bus Details",
   "tags": [ "servicebus", "emulator" ],
   "timezone": "browser",
