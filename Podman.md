@@ -47,7 +47,7 @@ powershell New-Alias docker podman
 - Use Podman Compose for multi-container setups:
 ```bash
 podman compose -f docker-compose-simple.yaml build
-podman compose -f docker-compose-simple.yaml up
+podman-compose -f docker-compose-simple.yaml up
 ```
 
 Set PublisherDemo and SubscriberDemo as startup projects in your IDE to test sending and receiving messages.
